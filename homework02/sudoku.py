@@ -24,8 +24,7 @@ def display(grid: tp.List[tp.List[str]]) -> None:
     width = 2
     line = "+".join(["-" * (width * 3)] * 3)
     for row in range(9):
-        print("".join(grid[row][col].center(width) +
-              ("|" if str(col) in "25" else "") for col in range(9)))
+        print("".join(grid[row][col].center(width) + ("|" if str(col) in "25" else "") for col in range(9)))
         if str(row) in "25":
             print(line)
     print()
@@ -39,7 +38,7 @@ def group(values: tp.List[T], n: int) -> tp.List[tp.List[T]]:
     >>> group([1,2,3,4,5,6,7,8,9], 3)
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     """
-    return [values[i:i + n] for i in range(0, len(values), n)]
+    return [values[i : i + n] for i in range(0, len(values), n)]
 
 
 def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -116,6 +115,7 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     permissible_set = {str(num) for num in range(1, 10)}
     return permissible_set - set(row) - set(col) - set(block)
 
+
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     """Решение пазла, заданного в grid"""
     """ Как решать Судоку?
@@ -153,8 +153,7 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
         for j in range(9):
             row_check.add(solution[i][j])
             col_check.add(solution[j][i])
-            block_check.add(
-                solution[(i // 3) * 3 + j // 3][(i % 3) * 3 + j % 3])
+            block_check.add(solution[(i // 3) * 3 + j // 3][(i % 3) * 3 + j % 3])
 
         if row_check != digits_set or col_check != digits_set or block_check != digits_set:
             return False
