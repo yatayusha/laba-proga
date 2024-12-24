@@ -24,7 +24,8 @@ def display(grid: tp.List[tp.List[str]]) -> None:
     width = 2
     line = "+".join(["-" * (width * 3)] * 3)
     for row in range(9):
-        print("".join(grid[row][col].center(width) + ("|" if str(col) in "25" else "") for col in range(9)))
+        print("".join(grid[row][col].center(width) +
+              ("|" if str(col) in "25" else "") for col in range(9)))
         if str(row) in "25":
             print(line)
     print()
@@ -38,7 +39,7 @@ def group(values: tp.List[T], n: int) -> tp.List[tp.List[T]]:
     >>> group([1,2,3,4,5,6,7,8,9], 3)
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     """
-    return [values[i : i + n] for i in range(0, len(values), n)]
+    return [values[i:i + n] for i in range(0, len(values), n)]
 
 
 def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -62,8 +63,7 @@ def get_col(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str
     >>> get_col([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (0, 2))
     ['3', '6', '9']
     """
-    column = [row[pos[1]] for row in grid]
-    return column
+    return [row[pos[1]] for row in grid]
 
 
 def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -94,8 +94,8 @@ def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[in
     (2, 0)
     """
     for n, row in enumerate(grid):
-        for k, tochka in enumerate(row):
-            if tochka == ".":
+        for k, cell in enumerate(row):
+            if cell == ".":
                 return n, k
     return None
 
@@ -114,9 +114,7 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     col = get_col(grid, pos)
     block = get_block(grid, pos)
     permissible_set = {str(num) for num in range(1, 10)}
-    possible_values = permissible_set - set(row) - set(col) - set(block)
-    return possible_values
-
+    return permissible_set - set(row) - set(col) - set(block)
 
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     """Решение пазла, заданного в grid"""
@@ -155,7 +153,8 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
         for j in range(9):
             row_check.add(solution[i][j])
             col_check.add(solution[j][i])
-            block_check.add(solution[(i // 3) * 3 + j // 3][(i % 3) * 3 + j % 3])
+            block_check.add(
+                solution[(i // 3) * 3 + j // 3][(i % 3) * 3 + j % 3])
 
         if row_check != digits_set or col_check != digits_set or block_check != digits_set:
             return False
