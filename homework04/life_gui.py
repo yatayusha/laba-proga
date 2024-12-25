@@ -108,7 +108,18 @@ class GUI(UI):
             self.draw_grid()
             self.draw_lines()
             self.draw_console()
-            self._check_cautions()
+            if self.life.is_max_generations_exceeded:
+                self.draw_caution("Max generations exceeded")
+                self.paused = True
+            elif not self.life.is_changing:
+                self.draw_caution("No changes in generations")
+                self.paused = True
+            pygame.display.flip()
+
+            if not self.paused:
+                self.life.step()
+
+            clock.tick(self.speed)
 
             pygame.display.flip()
 
@@ -119,12 +130,3 @@ class GUI(UI):
 
         pygame.quit()  # pylint: disable=no-member
         sys.exit()
-
-    def _check_cautions(self):
-        """Проверяет условия для предупреждений"""
-        if self.life.is_max_generations_exceeded:
-            self.draw_caution("Max generations exceeded")
-            self.paused = True
-        elif not self.life.is_changing:
-            self.draw_caution("No changes in generations")
-            self.paused = True

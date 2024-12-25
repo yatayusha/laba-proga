@@ -1,3 +1,4 @@
+"""Creating console interface"""
 import curses
 
 from life import GameOfLife
