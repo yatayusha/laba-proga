@@ -31,6 +31,7 @@ def draw_maze(grid: List[List[str | int]], size: int = 10):
 
 
 def show_solution():
+    """ Our solution """
     maze, path = solve_maze(GRID)
     maze = add_path_to_grid(GRID, path)
     if path:
