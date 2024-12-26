@@ -74,13 +74,9 @@ class GameOfLife:
         Выполнить один шаг игры.
         """
 
-        if not self.is_max_generations_exceeded:
-            self.prev_generation = self.curr_generation
-            self.curr_generation = self.get_next_generation()
-            if self.is_changing:
-                self.generations += 1
-        else:
-            pygame.quit()
+        self.prev_generation = self.curr_generation
+        self.curr_generation = self.get_next_generation()
+        self.generations += 1
 
     @property
     def is_max_generations_exceeded(self) -> bool:
