@@ -1,11 +1,10 @@
-""" "Game of life" creating """
+""" "Game of Life" game implementation based on suggestions from the course """
 
 import pathlib
 import random
 import typing as tp
 
 import pygame
-from pygame.locals import *
 
 Cell = tp.Tuple[int, int]
 Cells = tp.List[int]
@@ -13,7 +12,7 @@ Grid = tp.List[Cells]
 
 
 class GameOfLife:
-    """Initializing parameters"""
+    """Creating Game of Life class"""
 
     def __init__(
         self,
@@ -23,6 +22,7 @@ class GameOfLife:
     ) -> None:
         # Размер клеточного поля
         self.rows, self.cols = size
+        self.cell_size = 10
         # Предыдущее поколение клеток
         self.prev_generation = self.create_grid()
         # Текущее поколение клеток
@@ -33,18 +33,11 @@ class GameOfLife:
         self.generations = 1
 
     def create_grid(self, randomize: bool = False) -> Grid:
-        """Grid creating"""
-        grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
-
-        if randomize:
-            for i in range(self.cols):
-                for j in range(self.rows):
-                    grid[i][j] = random.randint(0, 1)
-
-        return grid
+        """Creating a grid"""
+        return [[random.randint(0, 1) if randomize else 0 for _ in range(self.cols)] for _ in range(self.rows)]
 
     def get_neighbours(self, cell: Cell) -> Cells:
-        """Finding the neighbours"""
+        """Getting the condition of neighbours"""
         x, y = cell
         neib_cells = []
         for i in range(max(0, x - 1), min(self.rows, x + 2)):
@@ -55,28 +48,30 @@ class GameOfLife:
         return neib_cells
 
     def get_next_generation(self) -> Grid:
-        """Next generation is"""
-        out = [[0] * self.cols for _ in range(self.rows)]
-        for x in range(self.rows):
-            for y in range(self.cols):
-                cells_neighbours = self.get_neighbours((x, y))
-                alife_neibs = sum(cells_neighbours)
-
-                if self.curr_generation == 0 and alife_neibs == 3:
-                    out[x][y] = 1
-                elif self.curr_generation == 1:
-                    if alife_neibs >= 2 and alife_neibs <= 3:
-                        out[x][y] = 1
-        return out
+        """Getting the next generation"""
+        new_grid = [[0] * self.cols for _ in range(self.rows)]
+        for i in range(self.rows):
+            for j in range(self.cols):
+                neib_cells = self.get_neighbours((i, j))
+                alive_neibs = sum(neib_cells)
+                if self.curr_generation[i][j] == 0 and alive_neibs == 3:
+                    new_grid[i][j] = 1
+                elif self.curr_generation[i][j] == 1:
+                    if 2 <= alive_neibs <= 3:
+                        new_grid[i][j] = 1
+        return new_grid
 
     def step(self) -> None:
         """
-        Выполнить один шаг игры.
+        Perform one step of the game.
         """
-
-        self.prev_generation = self.curr_generation
-        self.curr_generation = self.get_next_generation()
-        self.generations += 1
+        if not self.is_max_generations_exceeded:
+            self.prev_generation = self.curr_generation
+            self.curr_generation = self.get_next_generation()
+            if self.is_changing:
+                self.generations += 1
+        else:
+            pygame.quit()  # pylint: disable=no-member
 
     @property
     def is_max_generations_exceeded(self) -> bool:

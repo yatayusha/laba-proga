@@ -1,4 +1,6 @@
-""" Creating text interface"""
+"""Creating GUI interface"""
+
+import sys
 
 import pygame
 from life import GameOfLife
@@ -7,115 +9,101 @@ from ui import UI
 
 
 class GUI(UI):
-    """Initializing parameters"""
+    """GUI class creation"""
 
     def __init__(self, life: GameOfLife, cell_size: int = 10, speed: int = 10) -> None:
         super().__init__(life)
         self.cell_size = cell_size
-        self.speed = speed
         self.width = self.life.cols * self.cell_size
         self.height = self.life.rows * self.cell_size
-        self.screen_size = self.width, self.height
         self.screen = pygame.display.set_mode((self.width, self.height + 50))
-
+        self.speed = speed
         self.paused = False
-        self.pause_button = pygame.Rect(10, self.height + 10, 50, 30)
-        self.resume_button = pygame.Rect(90, self.height + 10, 50, 30)
 
-        pygame.display.set_caption("Game of Life")
+        self.pause_button = pygame.Rect(10, self.height + 10, 70, 30)
+        self.resume_button = pygame.Rect(90, self.height + 10, 70, 30)
 
         pygame.font.init()
-        self.font = pygame.font.SysFont("Montserrat", 18)
+        self.font = pygame.font.SysFont("Consolas", 16)
 
     def draw_lines(self) -> None:
-        """Drawing lines"""
+        """Draw the grid"""
         for x in range(0, self.width, self.cell_size):
             pygame.draw.line(self.screen, pygame.Color("gray"), (x, 0), (x, self.height))
         for y in range(0, self.height, self.cell_size):
             pygame.draw.line(self.screen, pygame.Color("gray"), (0, y), (self.width, y))
 
     def draw_grid(self) -> None:
-        """Creating Grid"""
-        for y in range(self.life.rows):
-            for x in range(self.life.cols):
-                color = pygame.Color("green") if self.life.curr_generation[y][x] == 1 else pygame.Color("white")
-                rect = pygame.Rect(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size)
-                pygame.draw.rect(self.screen, color, rect)
+        """Draw the state of cells"""
+        for i, row in enumerate(self.life.curr_generation):
+            for j, cell in enumerate(row):
+                color = pygame.Color("green") if cell else pygame.Color("white")
+                pygame.draw.rect(
+                    self.screen, color, (j * self.cell_size, i * self.cell_size, self.cell_size, self.cell_size)
+                )
 
-    def handle_mouse_click(self, event) -> None:
-        """Обработать клики мыши по кнопке паузы/возобновления игры"""
-        mouse_pos = event.pos
-        if self.button.collidepoint(mouse_pos):
-            self.status = not self.status
+    def draw_console(self) -> None:
+        """Draw the buttons with text"""
+        pygame.draw.rect(self.screen, pygame.Color("light gray"), self.pause_button, border_radius=10)
+        pygame.draw.rect(self.screen, pygame.Color("light gray"), self.resume_button, border_radius=10)
 
-    def handle_cell_editing(self, event) -> None:
-        """Обработать редактирование клеток в режиме паузы"""
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = event.pos
-            pos_x = mouse_pos[0] // self.cell_size
-            pos_y = mouse_pos[1] // self.cell_size
-            # Изменение состояния клетки
-            self.life.curr_generation[pos_y][pos_x] = 1 - self.life.curr_generation[pos_y][pos_x]
-        self.draw_grid()
-        self.draw_lines()
+        pause_text = self.font.render("pause", True, pygame.Color("black"))
+        resume_text = self.font.render("resume", True, pygame.Color("black"))
+        text_surface = self.font.render(f"Generation: {self.life.generations}", True, pygame.Color("Purple"))
+        text_instr = self.font.render("press [q] to exit", True, pygame.Color("Red"))
 
-    def draw_pause_button(self) -> None:
-        """Отрисовать кнопку паузы"""
-        pygame.draw.rect(self.screen, pygame.Color("light gray"), self.button, border_radius=10)
-        pause_text = self.font.render("Pause", True, pygame.Color("black"))
-        self.screen.blit(pause_text, (35, 13))
+        self.screen.blit(pause_text, (self.pause_button.x + 10, self.pause_button.y + 5))
+        self.screen.blit(resume_text, (self.resume_button.x + 5, self.resume_button.y + 5))
+        self.screen.blit(text_surface, (self.width - 200, self.height + 10))
+        self.screen.blit(text_instr, (self.width - 200, self.height + 30))
 
-    def draw_resume_button(self) -> None:
-        """Отрисовать кнопку возобновления"""
-        pygame.draw.rect(self.screen, pygame.Color("light gray"), self.button, border_radius=10)
-        resume_text = self.font.render("Resume", True, pygame.Color("black"))
-        self.screen.blit(resume_text, (35, 13))
-
-        self.draw_grid()
-        self.draw_lines()
-
-    def display_errors(self):
-        """Отображает ошибки, если они есть"""
-        if self.life.is_max_generations_exceeded:
-            error_max_generation = self.font.render("Max generations exceeded", True, pygame.Color("red"))
-            self.screen.blit(error_max_generation, (self.width // 4, self.height // 2))
-            return True
-
-        if not self.life.is_changing:
-            error_changing = self.font.render("Stable game obtained", True, pygame.Color("red"))
-            self.screen.blit(error_changing, (self.width // 4, self.height // 2))
-            return True
-
-        return False
+    def draw_caution(self, caut_text) -> None:
+        """Draw the caution text"""
+        caution_text = self.font.render(caut_text, True, pygame.Color("maroon"))
+        text_rect = caution_text.get_rect(center=(self.width // 2, self.height // 2))
+        self.screen.blit(caution_text, text_rect)
 
     def run(self) -> None:
-        """Запускает игру"""
+        """Run the game"""
         pygame.init()  # pylint: disable=no-member
         clock = pygame.time.Clock()
+        pygame.display.set_caption("Game of Life")
         self.screen.fill(pygame.Color("white"))
 
         running = True
         while running:
             for event in pygame.event.get():
-                if event.type == QUIT:
+                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_q):
                     running = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_mouse_click(event)
-                    self.handle_cell_editing(event)
-            if self.display_errors():
-                pygame.display.flip()
-                pygame.time.wait(2000)
-                running = False
-            if not self.status:
-                self.life.step()
-            self.draw_lines()
-            self.draw_grid()
+                elif event.type == KEYDOWN and event.key == K_SPACE:
+                    self.paused = not self.paused
+                elif event.type == MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    j = x // self.cell_size
+                    i = y // self.cell_size
+                    if self.pause_button.collidepoint(x, y):
+                        self.paused = True
+                    elif self.resume_button.collidepoint(x, y):
+                        self.paused = False
+                    else:
+                        self.life.curr_generation[i][j] = 1 if self.life.curr_generation[i][j] == 0 else 0
 
-            if self.status is False:
-                self.draw_pause_button()
-            else:
-                self.handle_cell_editing(event)
-                self.draw_resume_button()
+            self.screen.fill(pygame.Color("white"))
+            self.draw_grid()
+            self.draw_lines()
+            self.draw_console()
+            if self.life.is_max_generations_exceeded:
+                self.draw_caution("Max generations exceeded")
+                self.paused = True
+            elif not self.life.is_changing:
+                self.draw_caution("No changes in generations")
+                self.paused = True
             pygame.display.flip()
+
+            if not self.paused:
+                self.life.step()
+
             clock.tick(self.speed)
+
         pygame.quit()  # pylint: disable=no-member
+        sys.exit()
