@@ -1,15 +1,16 @@
 """ Creating text interface"""
+
 import sys
 
 import pygame
-from pygame.locals import *
-
 from life import GameOfLife
+
+from pygame.locals import *
 from ui import UI
 
 
 class GUI(UI):
-    """ Initializing parameters """
+    """Initializing parameters"""
 
     def __init__(self, life: GameOfLife, cell_size: int = 10, speed: int = 10) -> None:
         super().__init__(life)
@@ -27,7 +28,7 @@ class GUI(UI):
         self.font = pygame.font.SysFont("Montserrat", 14)
 
     def draw_lines(self) -> None:
-        """ Drawing lines """
+        """Drawing lines"""
         for x in range(0, self.width, self.cell_size):
             pygame.draw.line(self.screen, pygame.Color(
                 "gray"), (x, 0), (x, self.height))
@@ -36,14 +37,14 @@ class GUI(UI):
                 "gray"), (0, y), (self.width, y))
 
     def draw_grid(self) -> None:
-        """ Creating Grid """
+        """Creating Grid"""
         for x, row in enumerate(self.life.curr_generation):
             for y, cell in enumerate(row):
                 color = pygame.Color(
                     "green") if cell else pygame.Color("white")
                 pygame.draw.rect(
-                    self.screen, color, (x * self.cell_size, y *
-                                         self.cell_size, self.cell_size, self.cell_size)
+                    self.screen, color, (x * self.cell_size, y * self.cell_size,
+                                         self.cell_size, self.cell_size)
                 )
 
     def draw_console(self) -> None:
@@ -61,8 +62,8 @@ class GUI(UI):
 
     def _draw_info(self):
         """Отрисовывает дополнительную информацию"""
-        gen_text = self.font.render(
-            f"Generation: {self.life.generations}", True, pygame.Color("Red"))
+        gen_text = self.font.render(f"Generation: {self.life.generations}",
+                                    True, pygame.Color("Red"))
         exit_text = self.font.render(
             "press [q] to exit", True, pygame.Color("Blue"))
         self.screen.blit(gen_text, (self.width - 200, self.height + 10))
@@ -86,8 +87,9 @@ class GUI(UI):
         while running:
             for event in pygame.event.get():
 
-                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and
-                                                 event.key == pygame.K_q):  # pylint: disable=no-member
+                if event.type == pygame.QUIT or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_q
+                ):  # pylint: disable=no-member
                     self.running = False
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:  # pylint: disable=no-member
                     self.paused = not self.paused
